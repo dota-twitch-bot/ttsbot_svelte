@@ -1,6 +1,8 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script>
+    import Twitch from '../lib/twitch.svelte';
+    import Speak from '../lib/speak.svelte';
+    let speak;
+</script>
 
-<h1 class="text-5xl font-bold underline">
-    Hello world!
-  </h1>
+<Speak bind:speak={speak}/>
+<Twitch speak={speak}/>
