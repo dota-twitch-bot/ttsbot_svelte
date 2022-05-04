@@ -13,9 +13,11 @@
 		synth.speak(utterance);
 	};
 </script>
-
-<select bind:value={selectedVoice}>
-	{#each voices as voice, i}
-		<option value={i}>{voice.name} - {voice.lang}</option>
-	{/each}
-</select>
+<div class="m-4">
+    <span>Voz: </span>
+    <select bind:value={selectedVoice}>
+        {#each voices as voice, i}
+            <option value={i}>{voice.name} - {voice.lang}</option>
+        {/each}
+    </select>
+</div>
