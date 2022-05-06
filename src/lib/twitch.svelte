@@ -63,8 +63,12 @@
 			if (command === 'voz') {
 				if (!m.has(tags.username)) m.set(tags.username, new Set());
 				if ($users.get(tags.username)?.banned || $users.get(tags.username)?.timedout) return;
-				let minuteLimit = $users.get(tags.username).minuteLimit ? $users.get(tags.username).minuteLimit : $config.minuteLimit;
-				let hourLimit = $users.get(tags.username).hourLimit ? $users.get(tags.username).hourLimit : $config.hourLimit;
+				let minuteLimit = $users.get(tags.username)?.minuteLimit ? $users.get(tags.username).minuteLimit : $config.minuteLimit;
+				let hourLimit = $users.get(tags.username)?.hourLimit ? $users.get(tags.username).hourLimit : $config.hourLimit;
+				if (isNaN(parseInt(minuteLimit))) minuteLimit = Number.MAX_SAFE_INTEGER;
+				if (isNaN(parseInt(hourLimit))) hourLimit = Number.MAX_SAFE_INTEGER;
+				console.log(minuteLimit);
+				console.log(hourLimit);
 				if ([...m.get(tags.username)].filter(e => (Date.now() - e) < (60 * 1000)).length >= minuteLimit) return;
 				if ([...m.get(tags.username)].filter(e => (Date.now() - e) < (60 * 60 * 1000)).length >= hourLimit) return;
 				m.get(tags.username).add(Date.now());
@@ -86,6 +90,9 @@
 			 else if (command === 'voz_limite_minuto') {
 				setMinuteLimit(args[0], args[1]);
 			} else if (command === 'voz_limite_hora') {
+				setHourLimit(args[0], args[1]);
+			} else if (command === 'voz_limite') {
+				setMinuteLimit(args[0], args[1]);
 				setHourLimit(args[0], args[1]);
 			}
 		});

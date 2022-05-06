@@ -32,6 +32,7 @@
             <p><span class="font-semibold">!voz_timeout</span> [usuario] [duração em minutos]</p>
             <p><span class="font-semibold">!voz_limite_minuto</span> [usuario] [limite de mensagens por minuto]</p>
             <p><span class="font-semibold">!voz_limite_hora</span> [usuario] [limite de mensagens por hora]</p>
+            <p><span class="font-semibold">!voz_limite</span> [usuario] [limite de mensagens por minuto e por hora  ]</p>
         </div>
     {/if}
 </div>
