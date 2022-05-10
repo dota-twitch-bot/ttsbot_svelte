@@ -3,7 +3,6 @@
 	import { users } from '../stores/users.js';
 	import { config } from '../stores/config.js';
 	import {messageQueue} from '../stores/messageQueue.js';
-	export let speak;
 	let timeoutduration = 0;
 	let currentUser;
 	let closeTimeoutModal;
