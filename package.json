@@ -31,6 +31,8 @@
   },
   "type": "module",
   "dependencies": {
+    "easy-speech": "^1.1.2",
+    "socket.io-client": "^4.5.0",
     "tmi.js": "^1.8.5"
   }
 }

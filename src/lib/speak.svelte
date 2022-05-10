@@ -12,6 +12,19 @@
 		utterance.voice = voices[selectedVoice];
 		synth.speak(utterance);
 	};
+	window.addEventListener('pause_speech', () => {
+		if (window.speechSynthesis.paused) {
+			window.speechSynthesis.resume();
+		}
+		else {
+			window.speechSynthesis.pause();
+		}
+		console.log('Recebeu evento de pause');
+	});
+	window.addEventListener('cancel_speech', () => {
+		window.speechSynthesis.cancel();
+		console.log('Recebeu evento de cancelar');
+	});
 </script>
 <div class="m-4">
     <span>Voz: </span>
