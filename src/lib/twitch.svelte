@@ -2,6 +2,7 @@
 	import tmi from 'tmi.js';
 	import { users } from '../stores/users.js';
 	import { config } from '../stores/config.js';
+	import {messageQueue} from '../stores/messageQueue.js';
 	export let speak;
 	let timeoutduration = 0;
 	let currentUser;
@@ -73,7 +74,8 @@
 				if ([...m.get(tags.username)].filter(e => (Date.now() - e) < (60 * 60 * 1000)).length >= hourLimit) return;
 				m.get(tags.username).add(Date.now());
 				console.log(m);
-				speak(args.join(' '));
+				// speak(args.join(' '));
+				$messageQueue.push(args.join(' '));
 			}
 			// Mod commands below
 			if (!(tags.mod || tags.username === channel.slice(1))) return;
