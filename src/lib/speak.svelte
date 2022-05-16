@@ -17,6 +17,7 @@
 					EasySpeech.status().status === 'resuming'
 				)
 					return;
+				console.log('Lendo uma mensagem');
 				await EasySpeech.speak({
 					text: $messageQueue.shift(),
 					voice: voices[selectedVoice],

@@ -7,34 +7,34 @@
     import { fade } from 'svelte/transition';
     let speak;
     let commandsVisible = false;
-    const url = new URL(window.location.href);
-    if (url.searchParams.get("access_token") && url.searchParams.get("refresh_token")) {
-        $access_token = url.searchParams.get("access_token");
-        $refresh_token = url.searchParams.get("refresh_token");
-        (async () => {
-            await fetch('https://id.twitch.tv/oauth2/validate', {
-                method: 'GET',
-                headers: {
-                    'Authorization': 'OAuth ' + $access_token
-                }
-            }).then(response => {
-                if (response.status != 200) return {};
-                return response.json();
-            }).then((data) => {
-                if (data.login) {
-                    $config.username = data.login;
-                    $config.channel = data.login;
-                    window.location.replace('/');
-                }
-            });
-        })();
-    }
+    // const url = new URL(window.location.href);
+    // if (url.searchParams.get("access_token") && url.searchParams.get("refresh_token")) {
+    //     $access_token = url.searchParams.get("access_token");
+    //     $refresh_token = url.searchParams.get("refresh_token");
+    //     (async () => {
+    //         await fetch('https://id.twitch.tv/oauth2/validate', {
+    //             method: 'GET',
+    //             headers: {
+    //                 'Authorization': 'OAuth ' + $access_token
+    //             }
+    //         }).then(response => {
+    //             if (response.status != 200) return {};
+    //             return response.json();
+    //         }).then((data) => {
+    //             if (data.login) {
+    //                 $config.username = data.login;
+    //                 $config.channel = data.login;
+    //                 window.location.replace('/');
+    //             }
+    //         });
+    //     })();
+    // }
 </script>
 
-<Websocket/>
+<!-- <Websocket/> -->
 
 
-{#if !$config.username}
+{#if true}
     <Speak bind:speak={speak}/>
     <div class="m-4">
         {#if !$config.username}

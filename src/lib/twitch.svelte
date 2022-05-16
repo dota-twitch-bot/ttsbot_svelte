@@ -61,20 +61,20 @@
 			const command = args.shift().toLowerCase();
 
 			if (command === 'voz') {
+				console.log('Recebeu comando de voz');
 				if (!m.has(tags.username)) m.set(tags.username, new Set());
 				if ($users.get(tags.username)?.banned || $users.get(tags.username)?.timedout) return;
+				if (tags.username in ['deftbizk']) return;
 				let minuteLimit = $users.get(tags.username)?.minuteLimit ? $users.get(tags.username).minuteLimit : $config.minuteLimit;
 				let hourLimit = $users.get(tags.username)?.hourLimit ? $users.get(tags.username).hourLimit : $config.hourLimit;
 				if (isNaN(parseInt(minuteLimit))) minuteLimit = Number.MAX_SAFE_INTEGER;
 				if (isNaN(parseInt(hourLimit))) hourLimit = Number.MAX_SAFE_INTEGER;
-				console.log(minuteLimit);
-				console.log(hourLimit);
 				if ([...m.get(tags.username)].filter(e => (Date.now() - e) < (60 * 1000)).length >= minuteLimit) return;
 				if ([...m.get(tags.username)].filter(e => (Date.now() - e) < (60 * 60 * 1000)).length >= hourLimit) return;
 				m.get(tags.username).add(Date.now());
-				console.log(m);
 				// speak(args.join(' '));
 				$messageQueue.push(args.join(' '));
+				console.log('Mensagem adicionada à fila: ' + args.join(' '));
 			}
 			// Mod commands below
 			if (!(tags.mod || tags.username === channel.slice(1))) return;
