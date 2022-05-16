@@ -32,8 +32,7 @@ jobs:
         run: npm install
         
       - name: Update version file
-      - run: rm src/current_version.js
-      - run: echo export const version = \""$(git log -1 --pretty=format:%h)\""\; > src/current_version.js
+      - run: rm src/current_version.js && echo export const version = \""$(git log -1 --pretty=format:%h)\""\; > src/current_version.js
       
       - name: Build
         run: npm run build
