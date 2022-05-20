@@ -17,13 +17,14 @@
 					EasySpeech.status().status === 'resuming'
 				)
 					return;
-				console.log('Lendo uma mensagem');
+				console.log('Lendo uma mensagem: ' + $messageQueue[0]);
 				await EasySpeech.speak({
 					text: $messageQueue.shift(),
 					voice: voices[selectedVoice],
 					pitch: 1,
 					rate: 1,
-					volume: 1
+					volume: 1,
+					end: e => console.log("EasySpeech terminou de ler uma mensagem.")
 				});
 			}, 250);
 			window.addEventListener('pause_speech', () => {
