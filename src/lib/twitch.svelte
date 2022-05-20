@@ -11,7 +11,12 @@
 	let m = new Map();
 
 	const client = new tmi.Client({
-			channels: [$config.channel]
+			channels: [$config.channel],
+			options: { debug: true, messagesLogLevel: "info" },
+			connection: {
+				reconnect: true,
+				secure: true
+			},
 		});
 
 	function setBan(username, banned) {
@@ -53,7 +58,7 @@
 			connectionStatus = "disconnected";
 		});
 
-		client.connect();
+		client.connect().catch(console.error);
 
 		client.on('chat', (channel, tags, message, self) => {
 			if (self || !message.startsWith('!')) return;
