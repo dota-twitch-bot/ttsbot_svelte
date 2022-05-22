@@ -6,6 +6,7 @@
 	let timeoutduration = 0;
 	let currentUser;
 	let closeTimeoutModal;
+	let speak;
 	let connectionStatus = "disconnected";
 	let searchQuery = "";
 	let m = new Map();

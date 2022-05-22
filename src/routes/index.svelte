@@ -5,7 +5,6 @@
     import {config} from '../stores/config.js';
     import {access_token, refresh_token} from '../stores/tokens.js';
     import { fade } from 'svelte/transition';
-    let speak;
     let commandsVisible = false;
     // const url = new URL(window.location.href);
     // if (url.searchParams.get("access_token") && url.searchParams.get("refresh_token")) {
@@ -35,7 +34,7 @@
 
 
 {#if true}
-    <Speak bind:speak={speak}/>
+    <Speak/>
     <div class="m-4">
         {#if !$config.username}
             <div>
@@ -66,7 +65,7 @@
             </div>
         {/if}
     </div>
-    <Twitch speak={speak}/>
+    <Twitch/>
 {:else}
     <div class="flex h-screen items-center">
         <a class="text-2xl hover:underline text-blue-600" href="https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=u34qlogqginndqmxdtjks02ioj048a&redirect_uri=http://localhost:3000/authorize&scope=channel:read:redemptions&state=c3ab8aa609ea11e793ae92361f002671">Fazer login com a Twitch.</a>
