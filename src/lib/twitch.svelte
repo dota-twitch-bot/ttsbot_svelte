@@ -12,7 +12,7 @@
 	let m = new Map();
 
 	const client = new tmi.Client({
-			channels: [$config.channel],
+			channels: [],
 			options: { debug: true, messagesLogLevel: "info" },
 			connection: {
 				reconnect: true,
@@ -50,8 +50,16 @@
 		});
 
 		client.on("connected", (addr, port) => {
-			console.log("Conectado à Twitch");
-			connectionStatus = "connected";
+			client.join($config.channel).then((data) => {
+				console.log("Conectado à Twitch");
+				connectionStatus = "connected";
+			}).catch((err) => {
+				connectionStatus = "connecting";
+				console.log(err);
+				setTimeout(() => {
+					connect();
+				}, 500);
+			});
 		});
 
 		client.on("disconnected", (reason) => {
@@ -59,7 +67,13 @@
 			connectionStatus = "disconnected";
 		});
 
-		client.connect().catch(console.error);
+		client.connect().catch(e => {
+			console.error(e);
+			connectionStatus = "disconnected";
+			setTimeout(() => {
+				connect();
+			}, 500);
+		});
 
 		client.on('chat', (channel, tags, message, self) => {
 			if (self || !message.startsWith('!')) return;
