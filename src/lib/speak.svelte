@@ -3,7 +3,6 @@
 	var synth = window.speechSynthesis;
 	let voices = synth.getVoices();
 	let selectedVoice = voices.findIndex((voice) => voice.lang === 'pt-BR');
-	
 	console.log('Voices loaded.');
 
 	speechSynthesis.onvoiceschanged = (() => {
@@ -11,13 +10,19 @@
 		voices = synth.getVoices();
 		selectedVoice = voices.findIndex((voice) => voice.lang === 'pt-BR');
 	});
+
 	setInterval(() => {
-		if ($messageQueue.length > 0 && !synth.speaking) {
-			let utterance = new SpeechSynthesisUtterance($messageQueue.shift());
+		if ($messageQueue.length > 0) {
+			let utterance = new SpeechSynthesisUtterance();
 			utterance.voice = voices[selectedVoice];
+			utterance.text = $messageQueue.shift();
 			synth.speak(utterance);		
 		}
 	}, 250);
+
+	setInterval(() => {
+		synth.resume();
+	}, 1000);
 	// let selectedVoice;
 	// selectedVoice = voices.findIndex((voice) => voice.lang === 'pt-BR');
 	// window.addEventListener('pause_speech', () => {
