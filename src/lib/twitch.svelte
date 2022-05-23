@@ -93,7 +93,7 @@
 				if ([...m.get(tags.username)].filter(e => (Date.now() - e) < (60 * 60 * 1000)).length >= hourLimit) return;
 				m.get(tags.username).add(Date.now());
 				// speak(args.join(' '));
-				$messageQueue.push(args.join(' '));
+				messageQueue.update(arr => [...arr, args.join(' ')]);
 				debug('Mensagem adicionada à fila: ' + args.join(' '));
 			}
 			// Mod commands below
