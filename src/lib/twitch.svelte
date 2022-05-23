@@ -80,41 +80,42 @@
 			if (self || !message.startsWith('!')) return;
 			const args = message.slice(1).split(' ');
 			const command = args.shift().toLowerCase();
+			const username = tags.username.toLowerCase();
 
 			if (command === 'voz') {
-				if (!m.has(tags.username)) m.set(tags.username, new Set());
-				if ($users.get(tags.username)?.banned || $users.get(tags.username)?.timedout) return;
-				if (tags.username in ['deftbizk']) return;
-				let minuteLimit = $users.get(tags.username)?.minuteLimit ? $users.get(tags.username).minuteLimit : $config.minuteLimit;
-				let hourLimit = $users.get(tags.username)?.hourLimit ? $users.get(tags.username).hourLimit : $config.hourLimit;
+				if (!m.has(username)) m.set(username, new Set());
+				if ($users.get(username)?.banned || $users.get(username)?.timedout) return;
+				if (username in ['deftbizk', 'bizarelli']) return;
+				let minuteLimit = $users.get(username)?.minuteLimit ? $users.get(username).minuteLimit : $config.minuteLimit;
+				let hourLimit = $users.get(username)?.hourLimit ? $users.get(username).hourLimit : $config.hourLimit;
 				if (isNaN(parseInt(minuteLimit))) minuteLimit = Number.MAX_SAFE_INTEGER;
 				if (isNaN(parseInt(hourLimit))) hourLimit = Number.MAX_SAFE_INTEGER;
-				if ([...m.get(tags.username)].filter(e => (Date.now() - e) < (60 * 1000)).length >= minuteLimit) return;
-				if ([...m.get(tags.username)].filter(e => (Date.now() - e) < (60 * 60 * 1000)).length >= hourLimit) return;
-				m.get(tags.username).add(Date.now());
+				if ([...m.get(username)].filter(e => (Date.now() - e) < (60 * 1000)).length >= minuteLimit) return;
+				if ([...m.get(username)].filter(e => (Date.now() - e) < (60 * 60 * 1000)).length >= hourLimit) return;
+				m.get(username).add(Date.now());
 				// speak(args.join(' '));
 				messageQueue.update(arr => [...arr, args.join(' ')]);
 				debug('Mensagem adicionada à fila: ' + args.join(' '));
 			}
 			// Mod commands below
-			if (!(tags.mod || tags.username === channel.slice(1))) return;
+			if (!(tags.mod || tags.username === channel.slice(1).toLowerCase())) return;
 
 			if (command === 'voz_ban') {
-				setBan(args[0], true);
+				setBan(args[0].toLowerCase(), true);
 			} else if (command === 'voz_unban') {
-				setBan(args[0], false);
+				setBan(args[0].toLowerCase(), false);
 			} else if (command === 'voz_timeout') {
-				setTimedout(args[0], true, args[1]);
+				setTimedout(args[0].toLowerCase(), true, args[1]);
 			} else if (command === 'voz_remove_timeout') {
-				setTimedout(args[0], false);
+				setTimedout(args[0].toLowerCase(), false);
 			}
 			 else if (command === 'voz_limite_minuto') {
-				setMinuteLimit(args[0], args[1]);
+				setMinuteLimit(args[0].toLowerCase(), args[1]);
 			} else if (command === 'voz_limite_hora') {
-				setHourLimit(args[0], args[1]);
+				setHourLimit(args[0].toLowerCase(), args[1]);
 			} else if (command === 'voz_limite') {
-				setMinuteLimit(args[0], args[1]);
-				setHourLimit(args[0], args[1]);
+				setMinuteLimit(args[0].toLowerCase(), args[1]);
+				setHourLimit(args[0].toLowerCase(), args[1]);
 			}
 		});
 	}
