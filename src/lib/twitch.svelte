@@ -3,6 +3,7 @@
 	import { users } from '../stores/users.js';
 	import { config } from '../stores/config.js';
 	import {messageQueue} from '../stores/messageQueue.js';
+	import {debug} from './debug.js';
 	let timeoutduration = 0;
 	let currentUser;
 	let closeTimeoutModal;
@@ -81,7 +82,6 @@
 			const command = args.shift().toLowerCase();
 
 			if (command === 'voz') {
-				console.log('Recebeu comando de voz');
 				if (!m.has(tags.username)) m.set(tags.username, new Set());
 				if ($users.get(tags.username)?.banned || $users.get(tags.username)?.timedout) return;
 				if (tags.username in ['deftbizk']) return;
@@ -94,7 +94,7 @@
 				m.get(tags.username).add(Date.now());
 				// speak(args.join(' '));
 				$messageQueue.push(args.join(' '));
-				console.log('Mensagem adicionada à fila: ' + args.join(' '));
+				debug('Mensagem adicionada à fila: ' + args.join(' '));
 			}
 			// Mod commands below
 			if (!(tags.mod || tags.username === channel.slice(1))) return;
