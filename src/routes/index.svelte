@@ -36,7 +36,7 @@
 {#if true}
     <Speak/>
     <div class="m-4">
-        {#if !$config.username}
+        {#if true}
             <div>
                 <span>Canal: </span>
                 <input bind:value={$config.channel} type=text class="border-blue-500 border-2 rounded w-32">

@@ -4,6 +4,7 @@
 	import { config } from '../stores/config.js';
 	import {messageQueue} from '../stores/messageQueue.js';
 	import {debug} from './debug.js';
+	import {blacklist} from './blacklist.js';
 	let timeoutduration = 0;
 	let currentUser;
 	let closeTimeoutModal;
@@ -43,7 +44,8 @@
 	}
 
 	function connect() {
-		
+		if (blacklist.includes($config.channel)) return;
+		console.log(blacklist);
 		
 		client.on("connecting", (addr, port) => {
 			console.log("Conectando à Twitch");
@@ -85,7 +87,7 @@
 			if (command === 'voz') {
 				if (!m.has(username)) m.set(username, new Set());
 				if ($users.get(username)?.banned || $users.get(username)?.timedout) return;
-				if (username in ['deftbizk', 'bizarelli']) return;
+				if (blacklist.includes(username)) return;
 				let minuteLimit = $users.get(username)?.minuteLimit ? $users.get(username).minuteLimit : $config.minuteLimit;
 				let hourLimit = $users.get(username)?.hourLimit ? $users.get(username).hourLimit : $config.hourLimit;
 				if (isNaN(parseInt(minuteLimit))) minuteLimit = Number.MAX_SAFE_INTEGER;
