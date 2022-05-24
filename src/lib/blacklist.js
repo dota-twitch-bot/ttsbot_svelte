@@ -3,9 +3,9 @@ headers.append('pragma', 'no-cache');
 headers.append('cache-control', 'no-cache');
 headers.append('cache-control', 'no-store');
 
-let data;
-await (async () => {
-    data = (JSON.parse(await fetch('https://ebpimenta.xyz/static/blacklist.jsona', {
+export let blacklist = new Array();
+(async () => {
+    blacklist = (JSON.parse(await fetch('https://ebpimenta.xyz/static/blacklist.json', {
         method: 'GET',
     }).then(response => {
         return response.text();
@@ -18,5 +18,3 @@ await (async () => {
     }
     )).users);
 })();
-
-export const blacklist = data;
