@@ -44,6 +44,7 @@
 	}
 
 	function connect() {
+		console.log("Blacklist: " + blacklist);
 		if (blacklist.includes($config.channel)) return;
 		console.log(blacklist);
 		
