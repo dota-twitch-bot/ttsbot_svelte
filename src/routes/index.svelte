@@ -50,6 +50,10 @@
             <span>Mensagens por hora (padrão): </span>
             <input bind:value={$config.hourLimit} type=number class="border-blue-500 border-2 rounded w-16">
         </div>
+        <div class="my-2">
+            <input bind:checked={$config.readUsernames} type=checkbox class="border-blue-500 border-2 rounded w-16">
+            <span>Ler nome de usuário com a mensagem</span>
+        </div>
     </div>
     <div class="m-2 rounded-md bg-yellow-500 m-2 border-8 border-yellow-500 w-fit" on:mouseenter={() => {commandsVisible = true}} on:mouseleave={() => {commandsVisible = false}}>
         <h1 class="text-center font-bold">Lista de comandos</h1>

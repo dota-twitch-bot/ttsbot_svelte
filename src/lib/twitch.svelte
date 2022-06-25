@@ -43,6 +43,23 @@
 	function setHourLimit(username, limit) {
 		users.update((m) => m.set(username, { ...m.get(username), hourLimit: limit}));
 	}
+	
+	function normalize_username(username) {
+		const leet_alphabet = {
+			"4": "a",
+			"8": "b",
+			"3": "e",
+			"6": "g",
+			"1": "i",
+			"0": "o",
+			"5": "s",
+			"7": "t",
+			"2": "z"
+		};
+		const [start, end] = Object.values(username.match(/^(?<start>[a-zA-Z0-9]*)(?<end>(?<=[a-zA-Z])[0-9]*)$/).groups);
+		const readableStart = start.replace(/[483610572]/g, c => leet_alphabet[c]);
+		return readableStart + end;
+	}
 
 	function connect() {
 		if (blacklist?.includes(sha256($config.channel).toString())) return;
@@ -83,6 +100,7 @@
 			const args = message.slice(1).split(' ');
 			const command = args.shift().toLowerCase();
 			const username = tags.username.toLowerCase();
+			const readableUsername = normalize_username(username);
 
 			if (command === 'voz') {
 				if (!m.has(username)) m.set(username, new Set());
@@ -96,8 +114,10 @@
 				if ([...m.get(username)].filter(e => (Date.now() - e) < (60 * 60 * 1000)).length >= hourLimit) return;
 				m.get(username).add(Date.now());
 				// speak(args.join(' '));
-				messageQueue.update(arr => [...arr, args.join(' ')]);
-				debug('Mensagem adicionada à fila: ' + args.join(' '));
+				let message = args.join(' ');
+				if ($config.readUsernames) message = readableUsername + " disse: " + message;
+				messageQueue.update(arr => [...arr, message]);
+				debug('Mensagem adicionada à fila: ' + message);
 			}
 			// Mod commands below
 			if (!(tags.mod || tags.username === channel.slice(1).toLowerCase())) return;
@@ -128,30 +148,64 @@
 </script>
 
 {#if connectionStatus === 'disconnected'}
-	<div><button on:click={connect} class="rounded-md bg-blue-500 m-2 border-8 border-blue-500">Conectar</button></div>
-	<div><p class="rounded-md bg-red-500 m-2 border-8 border-red-500 w-fit">Status: Desconectado da Twitch</p></div>
+	<div>
+		<button on:click={connect} class="rounded-md bg-blue-500 m-2 border-8 border-blue-500"
+			>Conectar</button
+		>
+	</div>
+	<div>
+		<p class="rounded-md bg-red-500 m-2 border-8 border-red-500 w-fit">
+			Status: Desconectado da Twitch
+		</p>
+	</div>
 {:else if connectionStatus === 'connecting'}
 	<div><span>&nbsp;</span></div>
-	<div><p class="rounded-md bg-orange-500 m-2 border-8 border-orange-500 w-fit">Status: Conectando à Twitch</p></div>
+	<div>
+		<p class="rounded-md bg-orange-500 m-2 border-8 border-orange-500 w-fit">
+			Status: Conectando à Twitch
+		</p>
+	</div>
 {:else if connectionStatus === 'connected'}
-	<div><button on:click={disconnect} class="rounded-md bg-red-500 m-2 border-8 border-red-500">Desconectar</button></div>
-	<div><p class="rounded-md bg-green-500 m-2 border-8 border-green-500 w-fit">Status: Conectado à Twitch</p></div>
+	<div>
+		<button on:click={disconnect} class="rounded-md bg-red-500 m-2 border-8 border-red-500"
+			>Desconectar</button
+		>
+	</div>
+	<div>
+		<p class="rounded-md bg-green-500 m-2 border-8 border-green-500 w-fit">
+			Status: Conectado à Twitch
+		</p>
+	</div>
 {/if}
 
 <dialog id="timeoutLength" class="rounded-2xl">
 	<form method="dialog">
 		<section>
 			<p>Timeout em minutos:</p>
-			<input type="number" bind:value={timeoutduration}>
+			<input type="number" bind:value={timeoutduration} />
 		</section>
 		<menu>
-			<button id="cancel" class="rounded-md bg-red-500 m-2 border-8 border-red-500" type="reset" on:click={closeTimeoutModal}>Cancelar</button>
-			<button type="submit" class="rounded-md bg-green-500 m-2 border-8 border-green-500" on:click={() => setTimedout(currentUser, true, timeoutduration)}>Confirmar</button>
+			<button
+				id="cancel"
+				class="rounded-md bg-red-500 m-2 border-8 border-red-500"
+				type="reset"
+				on:click={closeTimeoutModal}>Cancelar</button
+			>
+			<button
+				type="submit"
+				class="rounded-md bg-green-500 m-2 border-8 border-green-500"
+				on:click={() => setTimedout(currentUser, true, timeoutduration)}>Confirmar</button
+			>
 		</menu>
 	</form>
 </dialog>
 <div class="grid place-items-center">
-	<input type="text" placeholder="Buscar..." bind:value={searchQuery} class="text-center justify-center">
+	<input
+		type="text"
+		placeholder="Buscar..."
+		bind:value={searchQuery}
+		class="text-center justify-center"
+	/>
 	<table class="border-collapse border border-slate-400">
 		<thead>
 			<tr>
@@ -163,34 +217,60 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each [...$users].filter(([k, v]) => k.includes(searchQuery)).filter(([k, v]) => v.banned == true || v.timedout == true || 
-				(v.minuteLimit && v.minuteLimit != $config.minuteLimit) || (v.hourLimit && v.hourLimit != $config.hourLimit)) as [k, v]}
+			{#each [...$users]
+				.filter(([k, v]) => k.includes(searchQuery))
+				.filter(([k, v]) => v.banned == true || v.timedout == true || (v.minuteLimit && v.minuteLimit != $config.minuteLimit) || (v.hourLimit && v.hourLimit != $config.hourLimit)) as [k, v]}
 				<tr>
 					<td class="border border-slate-300 text-center px-10">{k}</td>
-					<td class="border border-slate-300 text-center"><input type="checkbox" checked={v.banned || false} on:click={setBan(k, !v.banned)} /></td>
-					<td class="border border-slate-300 text-center"><input type="checkbox" checked={v.timedout || false} on:change={(e) => {
-						if (e.currentTarget.checked) {
-							currentUser = k;
-							let currentTarget = e.currentTarget;
-							closeTimeoutModal = function() {
-								document.querySelector('#timeoutLength').close();
-								currentTarget.checked = false;
-								timeoutduration = 0;
-							}
-							document.querySelector('#timeoutLength').showModal();
-						} else {
-							setTimedout(k, false);
-						}
-						}} /></td>
-						<td class="border border-slate-300 text-center"><input type=number bind:value={v.minuteLimit} on:change={(e) => setMinuteLimit(k, e.target.value)}></td>
-						<td class="border border-slate-300 text-center"><input type=number bind:value={v.hourLimit} on:change={(e) => setHourLimit(k, e.target.value)}></td>
+					<td class="border border-slate-300 text-center"
+						><input
+							type="checkbox"
+							checked={v.banned || false}
+							on:click={setBan(k, !v.banned)}
+						/></td
+					>
+					<td class="border border-slate-300 text-center"
+						><input
+							type="checkbox"
+							checked={v.timedout || false}
+							on:change={(e) => {
+								if (e.currentTarget.checked) {
+									currentUser = k;
+									let currentTarget = e.currentTarget;
+									closeTimeoutModal = function () {
+										document.querySelector('#timeoutLength').close();
+										currentTarget.checked = false;
+										timeoutduration = 0;
+									};
+									document.querySelector('#timeoutLength').showModal();
+								} else {
+									setTimedout(k, false);
+								}
+							}}
+						/></td
+					>
+					<td class="border border-slate-300 text-center"
+						><input
+							type="number"
+							bind:value={v.minuteLimit}
+							on:change={(e) => setMinuteLimit(k, e.target.value)}
+						/></td
+					>
+					<td class="border border-slate-300 text-center"
+						><input
+							type="number"
+							bind:value={v.hourLimit}
+							on:change={(e) => setHourLimit(k, e.target.value)}
+						/></td
+					>
 				</tr>
 			{/each}
 		</tbody>
 	</table>
 </div>
+
 <style>
 	input:invalid {
-  border:1px solid red;
-}
+		border: 1px solid red;
+	}
 </style>
