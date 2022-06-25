@@ -96,13 +96,13 @@
 		});
 
 		client.on('chat', (channel, tags, message, self) => {
-			if (self || !message.startsWith('!')) return;
+			if (self || (!message.startsWith('!') && $config.workingMode === 'commandOnly')) return;
 			const args = message.slice(1).split(' ');
 			const command = args.shift().toLowerCase();
 			const username = tags.username.toLowerCase();
 			const readableUsername = normalize_username(username);
 
-			if (command === 'voz') {
+			if (command === 'voz' || ($config.workingMode === 'allMessages' && !message.startsWith('!'))) {
 				if (!m.has(username)) m.set(username, new Set());
 				if ($users.get(username)?.banned || $users.get(username)?.timedout) return;
 				if (blacklist?.includes(sha256(username).toString())) return;
@@ -114,10 +114,10 @@
 				if ([...m.get(username)].filter(e => (Date.now() - e) < (60 * 60 * 1000)).length >= hourLimit) return;
 				m.get(username).add(Date.now());
 				// speak(args.join(' '));
-				let message = args.join(' ');
-				if ($config.readUsernames) message = readableUsername + " disse: " + message;
-				messageQueue.update(arr => [...arr, message]);
-				debug('Mensagem adicionada à fila: ' + message);
+				let userMessage = $config.workingMode === 'commandOnly' ? args.join(' ') : message;
+				if ($config.readUsernames) userMessage = readableUsername + " disse: " + userMessage;
+				messageQueue.update(arr => [...arr, userMessage]);
+				debug('Mensagem adicionada à fila: ' + userMessage);
 			}
 			// Mod commands below
 			if (!(tags.mod || tags.username === channel.slice(1).toLowerCase())) return;
