@@ -56,9 +56,16 @@
 			"7": "t",
 			"2": "z"
 		};
-		const [start, end] = Object.values(username.match(/^(?<start>[a-zA-Z0-9]*)(?<end>(?<=[a-zA-Z])[0-9]*)$/).groups);
-		const readableStart = start.replace(/[483610572]/g, c => leet_alphabet[c]);
-		return readableStart + end;
+		const usernameRegex = username.match(/^(?<start>[a-zA-Z0-9]*)(?<end>(?<=[a-zA-Z])[0-9]*)$/);
+		if (usernameRegex == null) {
+			return username;
+		}
+		else {
+			const [start, end] = Object.values(usernameRegex.groups);
+			const readableStart = start.replace(/[483610572]/g, c => leet_alphabet[c]);
+			return readableStart + end;
+		}
+
 	}
 
 	function connect() {
