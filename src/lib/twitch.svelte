@@ -92,6 +92,9 @@
 		client.on("disconnected", (reason) => {
 			console.log("Disconectado da Twitch");
 			connectionStatus = "disconnected";
+			if ($config.autoConnect) {
+				connect();
+			}
 		});
 
 		client.connect().catch(e => {
@@ -120,8 +123,7 @@
 				if ([...m.get(username)].filter(e => (Date.now() - e) < (60 * 1000)).length >= minuteLimit) return;
 				if ([...m.get(username)].filter(e => (Date.now() - e) < (60 * 60 * 1000)).length >= hourLimit) return;
 				m.get(username).add(Date.now());
-				// speak(args.join(' '));
-				let userMessage = $config.workingMode === 'commandOnly' ? args.join(' ') : message;
+				let userMessage = (!$config.workingMode || $config.workingMode === 'commandOnly') ? args.join(' ') : message;
 				if ($config.readUsernames) userMessage = readableUsername + " disse: " + userMessage;
 				messageQueue.update(arr => [...arr, userMessage]);
 				debug('Mensagem adicionada à fila: ' + userMessage);
@@ -151,6 +153,9 @@
 
 	function disconnect() {
 		client.disconnect();
+	}
+	if ($config.autoConnect) {
+		connect();
 	}
 </script>
 
