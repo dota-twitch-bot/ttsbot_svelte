@@ -118,6 +118,8 @@
 				if (blacklist?.includes(sha256(username).toString())) return;
 				let minuteLimit = $users.get(username)?.minuteLimit ? $users.get(username).minuteLimit : $config.minuteLimit;
 				let hourLimit = $users.get(username)?.hourLimit ? $users.get(username).hourLimit : $config.hourLimit;
+				console.log("Limite minuto: " + minuteLimit +". Padrão: " + $config.minuteLimit);
+				console.log("Limite hora: " + hourLimit +". Padrão: " + $config.hourLimit);
 				if (minuteLimit === $config.minuteLimit && hourLimit === $config.hourLimit && $config.subMode && !tags.subscriber) {
 					minuteLimit = 0;
 					console.log("Não é sub");
