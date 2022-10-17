@@ -5,7 +5,7 @@
 	var synth = window.speechSynthesis;
 	let voices = synth.getVoices();
 	let selectedVoice = voices.findIndex((voice) => voice.lang === 'pt-BR');
-	let utterances = new Set();
+	let previousMessages = new Set();
 	console.log('Voices loaded.');
 
 	speechSynthesis.onvoiceschanged = (() => {
@@ -19,6 +19,10 @@
 		let utterance = new SpeechSynthesisUtterance();
 		utterance.voice = voices[selectedVoice];
 		utterance.text = $messageQueue.shift();
+		if (previousMessages.has(utterance.text)) {
+			debug("Mensagem repetida detectada: " + utterance.text);
+			return;
+		}
 		debug("Mensagem retirada da fila: " + utterance.text);
 		utterance.onstart = ((ev) => {
 			debug("Começou a ler mensagem: " + utterance.text);
@@ -26,13 +30,16 @@
 		utterance.onend = ((ev) => {
 			debug("Termiou de ler mensagem: " + utterance.text);
 		});
-		utterances.add(utterance);
+		previousMessages.add(utterance.text);
 		synth.speak(utterance);		
 	});
 
 	setInterval(() => {
 		synth.resume();
 	}, 1000);
+	setInterval(() => {
+		previousMessages.clear();
+	}, 5000);
 	// let selectedVoice;
 	// selectedVoice = voices.findIndex((voice) => voice.lang === 'pt-BR');
 	// window.addEventListener('pause_speech', () => {

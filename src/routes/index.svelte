@@ -73,7 +73,7 @@
                     bind:checked={$config.autoConnect}
 				/>
 				<label class="form-check-label inline-block text-gray-800" for="autoConnectCheckbox">
-					Conectar automaticamente
+					Reconectar automaticamente
 				</label>
 			</div>
 			<div class="form-check">

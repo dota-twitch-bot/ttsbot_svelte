@@ -162,9 +162,6 @@
 	function disconnect() {
 		client.disconnect();
 	}
-	if ($config.autoConnect) {
-		connect();
-	}
 </script>
 
 {#if connectionStatus === 'disconnected'}
