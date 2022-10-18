@@ -67,42 +67,45 @@
 		}
 
 	}
+	
+	function part() { 
+		client.getChannels().forEach(ch => client.part(ch));
+		connectionStatus = "connected";
+	}
 
-	function connect() {
+	function join() {
+		part();
+		connectionStatus = "joiningChannel";
+		client.join($config.channel).then((data) => {
+				console.log("Conectando ao canal " + $config.channel);
+				connectionStatus = "channelJoined";
+		}).catch((err) => {
+				connectionStatus = "connected";
+				console.log(err);
+		});
+	}
+
+	(() => {
 		if (blacklist?.includes(sha256($config.channel).toString())) return;
-		
+		if (connectionStatus != "disconnected") return;
+		connectionStatus = "initiatingConnection";
 		client.on("connecting", (addr, port) => {
 			console.log("Conectando à Twitch");
 			connectionStatus = "connecting";
 		});
 
 		client.on("connected", (addr, port) => {
-			client.join($config.channel).then((data) => {
-				console.log("Conectado à Twitch");
-				connectionStatus = "connected";
-			}).catch((err) => {
-				connectionStatus = "connecting";
-				console.log(err);
-				setTimeout(() => {
-					connect();
-				}, 500);
-			});
+			connectionStatus = "connected";
 		});
 
 		client.on("disconnected", (reason) => {
 			console.log("Disconectado da Twitch");
 			connectionStatus = "disconnected";
-			if ($config.autoConnect) {
-				connect();
-			}
 		});
 
 		client.connect().catch(e => {
 			console.error(e);
 			connectionStatus = "disconnected";
-			setTimeout(() => {
-				connect();
-			}, 500);
 		});
 
 		client.on('chat', (channel, tags, message, self) => {
@@ -157,19 +160,25 @@
 				setHourLimit(args[0].toLowerCase(), args[1]);
 			}
 		});
-	}
-
-	function disconnect() {
-		client.disconnect();
-	}
+	})();
 </script>
 
-{#if connectionStatus === 'disconnected'}
+{#if connectionStatus === 'channelJoined'}
 	<div>
-		<button on:click={connect} class="rounded-md bg-blue-500 m-2 border-8 border-blue-500"
-			>Conectar</button
-		>
+		<button on:click={part} class="rounded-md bg-red-500 m-2 border-8 border-red-500">Desconectar</button>
 	</div>
+	<div>
+		<p class="rounded-md bg-green-500 m-2 border-8 border-green-500 w-fit">
+			Status: Conectado ao canal
+		</p>
+	</div>
+{:else if connectionStatus === 'joiningChannel'}
+<div>
+	<p class="rounded-md bg-orange-500 m-2 border-8 border-orange-500 w-fit">
+		Status: Conectando ao canal
+	</p>
+</div>
+{:else if connectionStatus === 'disconnected'}
 	<div>
 		<p class="rounded-md bg-red-500 m-2 border-8 border-red-500 w-fit">
 			Status: Desconectado da Twitch
@@ -184,13 +193,11 @@
 	</div>
 {:else if connectionStatus === 'connected'}
 	<div>
-		<button on:click={disconnect} class="rounded-md bg-red-500 m-2 border-8 border-red-500"
-			>Desconectar</button
-		>
+		<button on:click={join} class="rounded-md bg-blue-500 m-2 border-8 border-blue-500">Conectar</button>
 	</div>
 	<div>
-		<p class="rounded-md bg-green-500 m-2 border-8 border-green-500 w-fit">
-			Status: Conectado à Twitch
+		<p class="rounded-md bg-orange-500 m-2 border-8 border-orange-500 w-fit">
+			Status: Aguardando conexão ao canal
 		</p>
 	</div>
 {/if}
