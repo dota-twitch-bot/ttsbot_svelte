@@ -2,21 +2,29 @@
 	import { messageQueue } from '../stores/messageQueue.js';
 	import { onDestroy } from 'svelte';
 	import {debug} from './debug.js';
+	import { favoriteVoice } from '../stores/favoriteVoice.js';
 	var synth = window.speechSynthesis;
 	let voices = synth.getVoices();
-	let selectedVoice = voices.findIndex((voice) => voice.lang === 'pt-BR');
+
 	console.log('Voices loaded.');
+	console.log("Selected voice: " + $favoriteVoice);
 
 	speechSynthesis.onvoiceschanged = (() => {
-		console.log("voices changed");
-		voices = synth.getVoices();
-		selectedVoice = voices.findIndex((voice) => voice.lang === 'pt-BR');
+		console.log("Voices changed."); 
+		voices = synth.getVoices().sort((a, b) => {
+			// if (navigator.languages.includes(a.lang)) return -1;
+			if (a.lang === navigator.language) return -1;
+			else return 1;
+		});
+		if (!$favoriteVoice) $favoriteVoice = voices.findIndex((voice) => voice.lang === navigator.language);
+		if ($favoriteVoice == -1) favoriteVoice.set(voices.findIndex((voice) => voice.lang === navigator.language));
+		else document.querySelector("#currentVoice").selectedIndex = $favoriteVoice;
 	});
 
 	const unsubscribe = messageQueue.subscribe(value => {
 		if ($messageQueue.length < 1) return;
 		let utterance = new SpeechSynthesisUtterance();
-		utterance.voice = voices[selectedVoice];
+		utterance.voice = voices[$favoriteVoice];
 		utterance.text = $messageQueue.shift();
 		debug("Mensagem retirada da fila: " + utterance.text);
 		utterance.onstart = ((ev) => {
@@ -27,16 +35,26 @@
 		});
 		synth.speak(utterance);		
 	});
+	onDestroy(unsubscribe);
 
 	setInterval(() => {
 		synth.resume();
 	}, 1000);
-	onDestroy(unsubscribe);
+
+	const updateLanguageInterval = setInterval(() => {
+		try {
+			document.querySelector("#currentVoice").selectedIndex = $favoriteVoice;
+			clearInterval(updateLanguageInterval);
+		} catch (e) {
+			// Not yet
+		}
+	}, 100);
+	
 </script>
 
 <div class="m-4">
 	<span>Voz: </span>
-	<select bind:value={selectedVoice}>
+	<select id="currentVoice" bind:value={$favoriteVoice}>
 		{#each voices as voice, i}
 			<option value={i}>{voice.name} - {voice.lang}</option>
 		{/each}
