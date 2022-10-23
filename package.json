@@ -35,6 +35,7 @@
     "easy-speech": "^1.1.2",
     "loglevel": "^1.8.0",
     "socket.io-client": "^4.5.0",
-    "tmi.js": "^1.8.5"
+    "tmi.js": "^1.8.5",
+    "ua-parser-js": "^1.0.32"
   }
 }

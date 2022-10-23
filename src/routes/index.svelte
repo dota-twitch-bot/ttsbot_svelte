@@ -1,33 +1,15 @@
 <script>
+	import UAParser from 'ua-parser-js';
 	import Twitch from '../lib/twitch.svelte';
 	import Speak from '../lib/speak.svelte';
 	import Websocket from '../lib/websocket.svelte';
 	import { config } from '../stores/config.js';
 	import { access_token, refresh_token } from '../stores/tokens.js';
 	import { fade } from 'svelte/transition';
+	let parser = new UAParser();
+	const browser = parser.getResult().browser.name.toLowerCase();
 	let commandsVisible = false;
-	// const url = new URL(window.location.href);
-	// if (url.searchParams.get("access_token") && url.searchParams.get("refresh_token")) {
-	//     $access_token = url.searchParams.get("access_token");
-	//     $refresh_token = url.searchParams.get("refresh_token");
-	//     (async () => {
-	//         await fetch('https://id.twitch.tv/oauth2/validate', {
-	//             method: 'GET',
-	//             headers: {
-	//                 'Authorization': 'OAuth ' + $access_token
-	//             }
-	//         }).then(response => {
-	//             if (response.status != 200) return {};
-	//             return response.json();
-	//         }).then((data) => {
-	//             if (data.login) {
-	//                 $config.username = data.login;
-	//                 $config.channel = data.login;
-	//                 window.location.replace('/');
-	//             }
-	//         });
-	//     })();
-	// }
+	let edgeWarningVisible = false;
 </script>
 
 <!-- <Websocket/> -->
@@ -119,6 +101,45 @@
 			</div>
 		</div>
 	</div>
+	{#if browser === "edge"}
+	<div class="m-2 rounded-md bg-orange-500 m-2 border-8 border-orange-500 w-fit"
+	on:mouseenter={() => {
+		edgeWarningVisible = true;
+	}}
+	on:mouseleave={() => {
+		edgeWarningVisible = false;
+	}}>
+		<h1 class="text-center font-bold">Você está utilizando o Microsoft Edge.</h1>
+		<h2 class="text-center">Se o bot parar de funcionar depois um tempo, veja <span class="font-bold">aqui</span> como resolver.</h2>
+		{#if edgeWarningVisible}
+			<div class="mt-2" transition:fade={{ duration: 500 }}>
+				<ul class="list-disc ml-16">
+					<li>
+						O Edge possui uma função que automaticamente desativa abas que não estão em foco após alguns minutos,
+						a fim de preservas recursos. Isso faz o bot parar de funcionar.</li>
+					<li>
+						Para que o bot funcione corretamente, você deve:
+						<ol class="list-decimal ml-16">
+							<li>
+								Abrir as configurações do navegador (<a href="https://i.imgur.com/zAqZg7y.png" class="no-underline hover:underline">imagem</a>).
+							</li>
+							<li>
+								Selecionar "Sistema e desempenho".
+							</li>
+							<li>
+								Em "Otimizar o Desempenho", clique em adicionar ao lado de "Nunca colocar estes sites em suspensão"
+								(<a href="https://i.imgur.com/AVUwviA.png" class="no-underline hover:underline">imagem</a>).
+							</li>
+							<li>
+								Adicione a URL <span class="underline">https://ttsbot.ebpimenta.xyz</span> à lista de exclusão.
+							</li>
+						</ol> 
+					</li>
+				</ul>
+			</div>
+		{/if}
+	</div>
+	{/if}
 	<div
 		class="m-2 rounded-md bg-yellow-500 m-2 border-8 border-yellow-500 w-fit"
 		on:mouseenter={() => {
