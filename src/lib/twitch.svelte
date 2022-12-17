@@ -114,7 +114,6 @@
 			const command = args.shift().toLowerCase();
 			const username = tags.username.toLowerCase();
 			const readableUsername = normalize_username(username);
-			console.log(tags);
 			if (command === 'voz' || ($config.workingMode === 'allMessages' && !message.startsWith('!'))) {
 				if (!m.has(username)) m.set(username, new Set());
 				if (username !== 'bl00dshoot') {
@@ -133,8 +132,28 @@
 					if ([...m.get(username)].filter(e => (Date.now() - e) < (60 * 1000)).length >= minuteLimit) return;
 					if ([...m.get(username)].filter(e => (Date.now() - e) < (60 * 60 * 1000)).length >= hourLimit) return;
 				}
+				// Remover emotes da mensagem
+				let lastPosition = 0;
+				let userMessage = "";
 				m.get(username).add(Date.now());
-				let userMessage = (!$config.workingMode || $config.workingMode === 'commandOnly') ? args.join(' ') : message;
+				if ("emotes" in tags && tags["emotes"] !== null) {
+					Object.values(tags["emotes"]).flat().sort().forEach(emotePosition => {
+						const start = parseInt(emotePosition.split("-")[0]);
+						const end = parseInt(emotePosition.split("-")[1]);
+						userMessage = userMessage + message.slice(lastPosition, start);
+						lastPosition = end + 1;
+					});
+					userMessage = userMessage + message.slice(lastPosition);
+				}
+				else {
+					userMessage = message;
+				}
+				// Processamentos finais
+				userMessage = userMessage.replace("!voz", "");
+				// remove URLs
+				userMessage = userMessage.replaceAll(/https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)/g, "");
+				userMessage = userMessage.replaceAll(/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g, "");
+
 				if ($config.readUsernames) userMessage = readableUsername + " disse: " + userMessage;
 				messageQueue.update(arr => [...arr, userMessage]);
 				debug('Mensagem adicionada à fila: ' + userMessage);
