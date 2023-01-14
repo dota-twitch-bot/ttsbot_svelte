@@ -11,6 +11,18 @@
 	let commandsVisible = false;
 	let edgeWarningVisible = false;
 	if (!Object.hasOwn($config, 'volume')) $config.volume = 100;
+
+	/*
+		Microsoft Edge will put inactive tabs to sleep after a certain amount of time.
+		This causes the bot to stop working until the user interacts with the tab again.
+		However, it will not put tabs to sleep if they are holding a lock,
+		So we use a permanently held lock as a hack to fix this issue.
+	*/
+	navigator.locks.request("dont_put_tab_to_sleep", async(lock) => {
+		while (true) {
+			await new Promise(resolve => setTimeout(resolve, ((2**32)/2) - 1));
+		}
+	});
 </script>
 
 <!-- <Websocket/> -->
