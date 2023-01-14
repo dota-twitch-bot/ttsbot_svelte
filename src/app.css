@@ -1,3 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+datalist {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    writing-mode: vertical-lr;
+    width: 200px;
+    margin-bottom: 20px;
+}
+
+option {
+    padding: 0;
+}
+
+input[type="range"] {
+    width: 200px;
+    margin: 0 10px 0 0;
+}

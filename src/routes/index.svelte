@@ -10,6 +10,7 @@
 	const browser = parser.getResult().browser.name.toLowerCase();
 	let commandsVisible = false;
 	let edgeWarningVisible = false;
+	if (!Object.hasOwn($config, 'volume')) $config.volume = 100;
 </script>
 
 <!-- <Websocket/> -->
@@ -46,6 +47,27 @@
 	</div>
 	<div class="flex justify-center">
 		<div>
+			<div class="">
+				<input
+					class=""
+					type="range"
+					id="volumeSlider"
+					list="volumeMarkers"
+					min="0"
+					max="100"
+                    bind:value={$config.volume}
+				/>
+				<label class="form-check-label inline-block text-gray-800" for="volumeSlider">
+					Volume
+				</label>
+				<datalist id="volumeMarkers">
+					<option value="0" label="0%"></option>
+					<option value="25" label="25%"></option>
+					<option value="50" label="50%"></option>
+					<option value="75" label="75%"></option>
+					<option value="100" label="100%"></option>
+				  </datalist>
+			</div>
 			<div class="form-check">
 				<input
 					class="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer"

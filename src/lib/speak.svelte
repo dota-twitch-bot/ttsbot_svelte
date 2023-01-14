@@ -2,6 +2,7 @@
 	import { messageQueue } from '../stores/messageQueue.js';
 	import { onDestroy } from 'svelte';
 	import {debug} from './debug.js';
+	import { config } from '../stores/config.js';
 	import { favoriteVoice } from '../stores/favoriteVoice.js';
 	var synth = window.speechSynthesis;
 	let voices = synth.getVoices();
@@ -24,8 +25,10 @@
 	const unsubscribe = messageQueue.subscribe(value => {
 		if ($messageQueue.length < 1) return;
 		let utterance = new SpeechSynthesisUtterance();
+		let volume = Object.hasOwn($config, 'volume') ? $config.volume : 100;
 		utterance.voice = voices[$favoriteVoice];
 		utterance.text = $messageQueue.shift();
+		utterance.volume = volume / 100;
 		debug("Mensagem retirada da fila: " + utterance.text);
 		utterance.onstart = ((ev) => {
 			debug("Começou a ler mensagem: " + utterance.text);
