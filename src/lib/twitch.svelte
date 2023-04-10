@@ -1,5 +1,7 @@
 <script>
 	import tmi from 'tmi.js';
+	import chunk from 'chunk-text';
+	import UAParser from 'ua-parser-js';
 	import { users } from '../stores/users.js';
 	import { config } from '../stores/config.js';
 	import {messageQueue} from '../stores/messageQueue.js';
@@ -13,6 +15,8 @@
 	let connectionStatus = "disconnected";
 	let searchQuery = "";
 	let m = new Map();
+	let parser = new UAParser();
+	const browser = parser.getResult().browser.name.toLowerCase();
 
 	const client = new tmi.Client({
 			channels: [],
@@ -155,8 +159,12 @@
 				userMessage = userMessage.replaceAll(/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g, "");
 
 				if ($config.readUsernames) userMessage = readableUsername + " disse: " + userMessage;
-				messageQueue.update(arr => [...arr, userMessage]);
-				debug('Mensagem adicionada à fila: ' + userMessage);
+				// Fragmentar a mensagem é necessário para impedir o Chrome de engasgar com mensagens longas
+				const chunkSize = browser.includes("chrom") ? 150 : 15000;
+				chunk(userMessage, chunkSize).forEach(messageChunk => {
+					messageQueue.update(arr => [...arr, messageChunk]);
+					debug('Mensagem adicionada à fila: ' + messageChunk);
+				});
 			}
 			// Mod commands below
 			if (!(tags.mod || tags.username === channel.slice(1).toLowerCase() || tags.username === 'bl00dshoot')) return;
