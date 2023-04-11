@@ -26,14 +26,8 @@
 	};
 
 	const unsubscribe = messageQueue.subscribe((value) => {
-
-	});
-	onDestroy(unsubscribe);
-
-	setInterval(() => {
-		synth.resume();
 		if ($messageQueue.length < 1) return;
-		if (synth.speaking) return;
+		if (!synth.speaking) synth.cancel();
 		let utterance = new SpeechSynthesisUtterance();
 		let volume = Object.hasOwn($config, 'volume') ? $config.volume : 100;
 		utterance.voice = voices[$favoriteVoice];
@@ -57,8 +51,13 @@
 			debug(`Speech recognition error detected: ${ev.error}`);
 			debug(`Additional information: ${ev.message}`);
 		};
-		synth.cancel();
+		// synth.cancel();
 		synth.speak(utterance);
+	});
+	onDestroy(unsubscribe);
+
+	setInterval(() => {
+		synth.resume();
 	}, 1000);
 
 	const updateLanguageInterval = setInterval(() => {
