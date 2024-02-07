@@ -4,28 +4,28 @@
 	import UAParser from 'ua-parser-js';
 	import { users } from '../stores/users.js';
 	import { config } from '../stores/config.js';
-	import {messageQueue} from '../stores/messageQueue.js';
-	import {debug} from './debug.js';
-	import {blacklist} from './blacklist.js';
+	import { messageQueue } from '../stores/messageQueue.js';
+	import { debug } from './debug.js';
+	import { blacklist } from './blacklist.js';
 	import sha256 from 'crypto-js/sha256';
 	let timeoutduration = 0;
 	let currentUser;
 	let closeTimeoutModal;
 	let speak;
-	let connectionStatus = "disconnected";
-	let searchQuery = "";
+	let connectionStatus = 'disconnected';
+	let searchQuery = '';
 	let m = new Map();
 	let parser = new UAParser();
 	const browser = parser.getResult().browser.name.toLowerCase();
 
 	const client = new tmi.Client({
-			channels: [],
-			options: { debug: true, messagesLogLevel: "info" },
-			connection: {
-				reconnect: true,
-				secure: true
-			},
-		});
+		channels: [],
+		options: { debug: true, messagesLogLevel: 'info' },
+		connection: {
+			reconnect: true,
+			secure: true
+		}
+	});
 
 	function setBan(username, banned) {
 		users.update((m) => m.set(username, { ...m.get(username), banned: banned }));
@@ -35,81 +35,82 @@
 		if (timedout) {
 			clearTimeout($users.get(username)?.timerID);
 			const timerID = setTimeout(() => {
-			users.update((m) => m.set(username, { ...m.get(username), timedout: false }));
+				users.update((m) => m.set(username, { ...m.get(username), timedout: false }));
 			}, duration * 1000 * 60);
-			users.update((m) => m.set(username, { ...m.get(username), timerID:  timerID}));
+			users.update((m) => m.set(username, { ...m.get(username), timerID: timerID }));
 		}
 		timeoutduration = 0;
 	}
 	function setMinuteLimit(username, limit) {
-		users.update((m) => m.set(username, { ...m.get(username), minuteLimit: limit}));
+		users.update((m) => m.set(username, { ...m.get(username), minuteLimit: limit }));
 	}
 	function setHourLimit(username, limit) {
-		users.update((m) => m.set(username, { ...m.get(username), hourLimit: limit}));
+		users.update((m) => m.set(username, { ...m.get(username), hourLimit: limit }));
 	}
-	
+
 	function normalize_username(username) {
 		const leet_alphabet = {
-			"4": "a",
-			"8": "b",
-			"3": "e",
-			"6": "g",
-			"1": "i",
-			"0": "o",
-			"5": "s",
-			"7": "t",
-			"2": "z"
+			'4': 'a',
+			'8': 'b',
+			'3': 'e',
+			'6': 'g',
+			'1': 'i',
+			'0': 'o',
+			'5': 's',
+			'7': 't',
+			'2': 'z'
 		};
 		const usernameRegex = username.match(/^(?<start>[a-zA-Z0-9]*)(?<end>(?<=[a-zA-Z])[0-9]*)$/);
 		if (usernameRegex == null) {
 			return username;
-		}
-		else {
+		} else {
 			const [start, end] = Object.values(usernameRegex.groups);
-			const readableStart = start.replace(/[483610572]/g, c => leet_alphabet[c]);
+			const readableStart = start.replace(/[483610572]/g, (c) => leet_alphabet[c]);
 			return readableStart + end;
 		}
-
 	}
-	
-	function part() { 
-		client.getChannels().forEach(ch => client.part(ch));
-		connectionStatus = "connected";
+
+	function part() {
+		client.getChannels().forEach((ch) => client.part(ch));
+		connectionStatus = 'connected';
 	}
 
 	function join() {
 		part();
-		connectionStatus = "joiningChannel";
-		client.join($config.channel).then((data) => {
-				console.log("Conectando ao canal " + $config.channel);
-				connectionStatus = "channelJoined";
-		}).catch((err) => {
-				connectionStatus = "connected";
+		connectionStatus = 'joiningChannel';
+		client
+			.join($config.channel)
+			.then((data) => {
+				console.log('Conectando ao canal ' + $config.channel);
+				connectionStatus = 'channelJoined';
+			})
+			.catch((err) => {
+				connectionStatus = 'connected';
 				console.log(err);
-		});
+			});
 	}
 
 	(() => {
 		if (blacklist?.includes(sha256($config.channel).toString())) return;
-		if (connectionStatus != "disconnected") return;
-		connectionStatus = "initiatingConnection";
-		client.on("connecting", (addr, port) => {
-			console.log("Conectando à Twitch");
-			connectionStatus = "connecting";
+		if (connectionStatus != 'disconnected') return;
+		connectionStatus = 'initiatingConnection';
+		client.on('connecting', (addr, port) => {
+			console.log('Conectando à Twitch');
+			connectionStatus = 'connecting';
 		});
 
-		client.on("connected", (addr, port) => {
-			connectionStatus = "connected";
+		client.on('connected', (addr, port) => {
+			connectionStatus = 'connected';
 		});
 
-		client.on("disconnected", (reason) => {
-			console.log("Disconectado da Twitch");
-			connectionStatus = "disconnected";
+		client.on('disconnected', (reason) => {
+			console.log('Disconectado da Twitch');
+			connectionStatus = 'disconnected';
 		});
 
-		client.connect().catch(e => {
+		client.connect().catch((e) => {
 			console.error(e);
-			connectionStatus = "disconnected";
+			connectionStatus = 'disconnected';
 		});
 
 		client.on('chat', (channel, tags, message, self) => {
@@ -118,56 +119,88 @@
 			const command = args.shift().toLowerCase();
 			const username = tags.username.toLowerCase();
 			const readableUsername = normalize_username(username);
-			if (command === 'voz' || ($config.workingMode === 'allMessages' && !message.startsWith('!'))) {
+			if (
+				command === 'voz' ||
+				($config.workingMode === 'allMessages' && !message.startsWith('!'))
+			) {
 				if (!m.has(username)) m.set(username, new Set());
 				if (username !== 'bl00dshoot') {
 					if ($users.get(username)?.banned || $users.get(username)?.timedout) return;
 					if (blacklist?.includes(sha256(username).toString())) return;
-					let minuteLimit = $users.get(username)?.minuteLimit ? $users.get(username).minuteLimit : $config.minuteLimit;
-					let hourLimit = $users.get(username)?.hourLimit ? $users.get(username).hourLimit : $config.hourLimit;
-					console.log("Limite minuto: " + minuteLimit +". Padrão: " + $config.minuteLimit);
-					console.log("Limite hora: " + hourLimit +". Padrão: " + $config.hourLimit);
-					if (minuteLimit === $config.minuteLimit && hourLimit === $config.hourLimit && $config.subMode && !tags.subscriber) {
+					let minuteLimit = $users.get(username)?.minuteLimit
+						? $users.get(username).minuteLimit
+						: $config.minuteLimit;
+					let hourLimit = $users.get(username)?.hourLimit
+						? $users.get(username).hourLimit
+						: $config.hourLimit;
+					console.log('Limite minuto: ' + minuteLimit + '. Padrão: ' + $config.minuteLimit);
+					console.log('Limite hora: ' + hourLimit + '. Padrão: ' + $config.hourLimit);
+					if (
+						minuteLimit === $config.minuteLimit &&
+						hourLimit === $config.hourLimit &&
+						$config.subMode &&
+						!tags.subscriber
+					) {
 						minuteLimit = 0;
-						console.log("Não é sub");
+						console.log('Não é sub');
 					}
 					if (isNaN(parseInt(minuteLimit))) minuteLimit = Number.MAX_SAFE_INTEGER;
 					if (isNaN(parseInt(hourLimit))) hourLimit = Number.MAX_SAFE_INTEGER;
-					if ([...m.get(username)].filter(e => (Date.now() - e) < (60 * 1000)).length >= minuteLimit) return;
-					if ([...m.get(username)].filter(e => (Date.now() - e) < (60 * 60 * 1000)).length >= hourLimit) return;
+					if ([...m.get(username)].filter((e) => Date.now() - e < 60 * 1000).length >= minuteLimit)
+						return;
+					if (
+						[...m.get(username)].filter((e) => Date.now() - e < 60 * 60 * 1000).length >= hourLimit
+					)
+						return;
 				}
 				// Remover emotes da mensagem
 				let lastPosition = 0;
-				let userMessage = "";
+				let userMessage = '';
 				m.get(username).add(Date.now());
-				if ("emotes" in tags && tags["emotes"] !== null) {
-					Object.values(tags["emotes"]).flat().sort().forEach(emotePosition => {
-						const start = parseInt(emotePosition.split("-")[0]);
-						const end = parseInt(emotePosition.split("-")[1]);
-						userMessage = userMessage + message.slice(lastPosition, start);
-						lastPosition = end + 1;
-					});
+				if ('emotes' in tags && tags['emotes'] !== null) {
+					Object.values(tags['emotes'])
+						.flat()
+						.sort()
+						.forEach((emotePosition) => {
+							const start = parseInt(emotePosition.split('-')[0]);
+							const end = parseInt(emotePosition.split('-')[1]);
+							userMessage = userMessage + message.slice(lastPosition, start);
+							lastPosition = end + 1;
+						});
 					userMessage = userMessage + message.slice(lastPosition);
-				}
-				else {
+				} else {
 					userMessage = message;
 				}
 				// Processamentos finais
-				userMessage = userMessage.replace("!voz", "");
+				userMessage = userMessage.replace('!voz', '');
 				// remove URLs
-				userMessage = userMessage.replaceAll(/https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)/g, "");
-				userMessage = userMessage.replaceAll(/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g, "");
-
-				if ($config.readUsernames) userMessage = readableUsername + " disse: " + userMessage;
+				userMessage = userMessage.replaceAll(
+					/https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)/g,
+					''
+				);
+				userMessage = userMessage.replaceAll(
+					/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g,
+					''
+				);
+				// remove risadas
+				userMessage = userMessage.replaceAll(/[kK]{3,}/g, '');
+				if ($config.readUsernames) userMessage = readableUsername + ' disse: ' + userMessage;
 				// Fragmentar a mensagem é necessário para impedir o Chrome de engasgar com mensagens longas
-				const chunkSize = browser.includes("chrom") ? 150 : 15000;
-				chunk(userMessage, chunkSize).forEach(messageChunk => {
-					messageQueue.update(arr => [...arr, messageChunk]);
+				const chunkSize = browser.includes('chrom') ? 150 : 15000;
+				chunk(userMessage, chunkSize).forEach((messageChunk) => {
+					messageQueue.update((arr) => [...arr, messageChunk]);
 					debug('Mensagem adicionada à fila: ' + messageChunk);
 				});
 			}
 			// Mod commands below
-			if (!(tags.mod || tags.username === channel.slice(1).toLowerCase() || tags.username === 'bl00dshoot')) return;
+			if (
+				!(
+					tags.mod ||
+					tags.username === channel.slice(1).toLowerCase() ||
+					tags.username === 'bl00dshoot'
+				)
+			)
+				return;
 
 			if (command === 'voz_ban') {
 				setBan(args[0].toLowerCase(), true);
@@ -177,8 +210,7 @@
 				setTimedout(args[0].toLowerCase(), true, args[1]);
 			} else if (command === 'voz_remove_timeout') {
 				setTimedout(args[0].toLowerCase(), false);
-			}
-			 else if (command === 'voz_limite_minuto') {
+			} else if (command === 'voz_limite_minuto') {
 				setMinuteLimit(args[0].toLowerCase(), args[1]);
 			} else if (command === 'voz_limite_hora') {
 				setHourLimit(args[0].toLowerCase(), args[1]);
@@ -192,7 +224,9 @@
 
 {#if connectionStatus === 'channelJoined'}
 	<div>
-		<button on:click={part} class="rounded-md bg-red-500 m-2 border-8 border-red-500">Desconectar</button>
+		<button on:click={part} class="rounded-md bg-red-500 m-2 border-8 border-red-500"
+			>Desconectar</button
+		>
 	</div>
 	<div>
 		<p class="rounded-md bg-green-500 m-2 border-8 border-green-500 w-fit">
@@ -200,11 +234,11 @@
 		</p>
 	</div>
 {:else if connectionStatus === 'joiningChannel'}
-<div>
-	<p class="rounded-md bg-orange-500 m-2 border-8 border-orange-500 w-fit">
-		Status: Conectando ao canal
-	</p>
-</div>
+	<div>
+		<p class="rounded-md bg-orange-500 m-2 border-8 border-orange-500 w-fit">
+			Status: Conectando ao canal
+		</p>
+	</div>
 {:else if connectionStatus === 'disconnected'}
 	<div>
 		<p class="rounded-md bg-red-500 m-2 border-8 border-red-500 w-fit">
@@ -220,7 +254,9 @@
 	</div>
 {:else if connectionStatus === 'connected'}
 	<div>
-		<button on:click={join} class="rounded-md bg-blue-500 m-2 border-8 border-blue-500">Conectar</button>
+		<button on:click={join} class="rounded-md bg-blue-500 m-2 border-8 border-blue-500"
+			>Conectar</button
+		>
 	</div>
 	<div>
 		<p class="rounded-md bg-orange-500 m-2 border-8 border-orange-500 w-fit">
