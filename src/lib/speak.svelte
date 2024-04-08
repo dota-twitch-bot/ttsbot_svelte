@@ -30,10 +30,10 @@
 		if (!synth.speaking) synth.cancel();
 		let utterance = new SpeechSynthesisUtterance();
 		let volume = 100;
-		volume = Object.hasOwn($config, 'volume') ? $config.volume : 100;
 		try {
 			volume = Object.hasOwn($config, 'volume') ? $config.volume : 100;
 		} catch (e) {
+			volume = 100;
 			console.log(e);
 		}
 		utterance.voice = voices[$favoriteVoice];
