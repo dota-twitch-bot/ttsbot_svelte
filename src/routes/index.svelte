@@ -10,8 +10,13 @@
 	const browser = parser.getResult().browser.name.toLowerCase();
 	let commandsVisible = false;
 	let edgeWarningVisible = false;
-	if (!Object.hasOwn($config, 'volume')) $config.volume = 100;
-
+	try {
+		if (!Object.hasOwn($config, 'volume')) $config.volume = 100;
+	} catch (e) {
+		$config.volume = 100;
+		console.log(e);
+	}
+	
 	/*
 		Microsoft Edge will put inactive tabs to sleep after a certain amount of time.
 		This causes the bot to stop working until the user interacts with the tab again.
