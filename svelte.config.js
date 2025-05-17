@@ -8,11 +8,11 @@
 // 		// (https://vercel.com/docs/concepts/functions/edge-functions)
 // 		// rather than serverless functions
 // 		edge: false,
-  
+
 // 		// an array of dependencies that esbuild should treat
 // 		// as external when bundling functions
 // 		external: [],
-  
+
 // 		// if true, will split your app into multiple functions
 // 		// instead of creating a single one for the entire app
 // 		split: false
@@ -23,9 +23,12 @@
 import adapter from '@sveltejs/adapter-static';
 
 export default {
-  kit: {
-    adapter: adapter({
-      fallback: '200.html'
-    })
-  }
+	kit: {
+		adapter: adapter({
+			fallback: '200.html'
+		}),
+		paths: {
+			base: process.env.NODE_ENV === 'production' ? '/ttsbot_svelte' : ''
+		}
+	}
 };
