@@ -79,6 +79,7 @@
 		part();
 		connectionStatus = 'joiningChannel';
 		if ($config.channel === 'bizarellidota') {
+			console.log('Conectando a kick');
 			const BASE_URL = 'wss://ws-us2.pusher.com/app/32cbd69e4b950bf97679';
 			const urlParams = new URLSearchParams({
 				protocol: '7',
