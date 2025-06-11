@@ -78,6 +78,83 @@
 	function join() {
 		part();
 		connectionStatus = 'joiningChannel';
+		if ($config.channel === 'bizarellidota') {
+			const BASE_URL = 'wss://ws-us2.pusher.com/app/32cbd69e4b950bf97679';
+			const urlParams = new URLSearchParams({
+				protocol: '7',
+				client: 'js',
+				version: '7.4.0',
+				flash: 'false'
+			});
+			const url = `${BASE_URL}?${urlParams.toString()}`;
+
+			const socket = new WebSocket(url);
+
+			socket.onopen = () => {
+				//TODO: funcionar para outros canais
+				socket.send(
+					JSON.stringify({
+						event: 'pusher:subscribe',
+						data: { auth: '', channel: `chatrooms.63834295.v2` }
+					})
+				);
+				connectionStatus = 'connected';
+			};
+
+			socket.onmessage = function messageHandle(event) {
+				// console.log("received: %s", event.data);
+				const data = JSON.parse(event.data);
+				// console.log(data);
+				if (data.event === 'App\\Events\\ChatMessageEvent') {
+					const msg = JSON.parse(data.data);
+					console.log('Recebeu msg Kick: ' + msg.content);
+					const message = msg.content;
+					console.log('Here 1: ' + message);
+					const exp =
+						(self || (!message.startsWith('!') && $config.workingMode === 'commandOnly')) === true;
+					if (exp) return;
+					console.log(exp);
+					console.log('Here 2: ' + message);
+					const args = message.slice(1).split(' ');
+					const command = args.shift().toLowerCase();
+					const username = msg.sender.username.toLowerCase();
+					const readableUsername = normalize_username(username);
+					if (
+						command === 'voz' ||
+						($config.workingMode === 'allMessages' && !message.startsWith('!'))
+					) {
+						if (!m.has(username)) m.set(username, new Set());
+						// Remover emotes da mensagem
+						let lastPosition = 0;
+						let userMessage = message;
+						m.get(username).add(Date.now());
+						// Processamentos finais
+						userMessage = userMessage.replace('!voz', '');
+						// remove URLs
+						userMessage = userMessage.replaceAll(
+							/https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)/g,
+							''
+						);
+						userMessage = userMessage.replaceAll(
+							/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g,
+							''
+						);
+						// remove risadas
+						userMessage = userMessage.replaceAll(/[kK]{3,}/g, '');
+						if ($config.readUsernames) userMessage = readableUsername + ' disse: ' + userMessage;
+						// Fragmentar a mensagem é necessário para impedir o Chrome de engasgar com mensagens longas
+						const chunkSize = browser.includes('chrom') ? 150 : 15000;
+						console.log('Final msg: ' + userMessage);
+						chunk(userMessage, chunkSize).forEach((messageChunk) => {
+							messageQueue.update((arr) => [...arr, messageChunk]);
+							debug('Mensagem adicionada à fila: ' + messageChunk);
+						});
+					}
+					// Mod commands below
+				}
+			};
+			return;
+		}
 		client
 			.join($config.channel)
 			.then((data) => {
